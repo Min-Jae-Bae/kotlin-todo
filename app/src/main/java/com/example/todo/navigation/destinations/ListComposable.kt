@@ -12,7 +12,7 @@ import com.example.todo.util.Constants.LIST_SCREEN
 * listComposable 관련 Composable 분할
 * listComposable - Task Screen 인자를 받음*/
 fun NavGraphBuilder.listComposable(
-    navigateToTaskScreen: (Int) -> Unit
+    navigateToTaskScreen: (taskId: Int) -> Unit
 ) {
     /*composable - argument 통해 이동
     * LIST_SCREEN 길에서 해당 Action 받아 이동 */

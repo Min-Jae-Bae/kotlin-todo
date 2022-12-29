@@ -18,7 +18,7 @@ import com.example.todo.R
 * topBar - 상단 바, content - 레이아웃 내용, floatingActionButton - 작업 추가 버튼*/
 @Composable
 fun ListScreen(
-    navigateToTaskScreen: (Int) -> Unit,
+    navigateToTaskScreen: (taskId: Int) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -39,7 +39,7 @@ fun ListScreen(
 *  */
 @Composable
 fun ListFab(
-    onFabClicked: (Int) -> Unit,
+    onFabClicked: (taskId: Int) -> Unit,
 ) {
     FloatingActionButton(
         onClick = {
