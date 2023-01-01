@@ -5,6 +5,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.todo.ui.screens.list.ListScreen
+import com.example.todo.ui.viewmodels.SharedViewModel
 import com.example.todo.util.Constants.LIST_ARGUMENT_KEY
 import com.example.todo.util.Constants.LIST_SCREEN
 
@@ -12,7 +13,8 @@ import com.example.todo.util.Constants.LIST_SCREEN
 * listComposable 관련 Composable 분할
 * listComposable - Task Screen 인자를 받음*/
 fun NavGraphBuilder.listComposable(
-    navigateToTaskScreen: (taskId: Int) -> Unit
+    navigateToTaskScreen: (taskId: Int) -> Unit,
+    sharedViewModel: SharedViewModel
 ) {
     /*composable - argument 통해 이동
     * LIST_SCREEN 길에서 해당 Action 받아 이동 */
@@ -22,6 +24,9 @@ fun NavGraphBuilder.listComposable(
             type = NavType.StringType
         })
     ) {
-        ListScreen(navigateToTaskScreen = navigateToTaskScreen)
+        ListScreen(
+            navigateToTaskScreen = navigateToTaskScreen,
+            sharedViewModel = sharedViewModel
+        )
     }
 }

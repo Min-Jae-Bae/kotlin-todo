@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.example.todo.navigation.destinations.listComposable
 import com.example.todo.navigation.destinations.taskComposable
+import com.example.todo.ui.viewmodels.SharedViewModel
 import com.example.todo.util.Constants.LIST_SCREEN
 
 /*SetupNavigation
@@ -13,7 +14,8 @@ import com.example.todo.util.Constants.LIST_SCREEN
 * - NavHost 속 이동할 모든 Composable 존재 (list, task, splash)*/
 @Composable
 fun SetupNavigation(
-    navController: NavHostController
+    navController: NavHostController,
+    sharedViewModel: SharedViewModel
 ) {
     /*remember
     * Screen에서 Compose의 이전 State(Action, taskId)기억하기 위해 사용*/
@@ -30,10 +32,11 @@ fun SetupNavigation(
         startDestination = LIST_SCREEN
     ) {
         listComposable(
-            navigateToTaskScreen = screen.task
+            navigateToTaskScreen = screen.task,
+            sharedViewModel = sharedViewModel
         )
         taskComposable(
-            navigateToListScreen = screen.list
+            navigateToListScreen = screen.list,
         )
     }
 }
