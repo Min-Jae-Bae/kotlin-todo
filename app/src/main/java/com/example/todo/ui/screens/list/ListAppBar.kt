@@ -26,7 +26,7 @@ import com.example.todo.ui.viewmodels.SharedViewModel
 import com.example.todo.util.SearchAppBarState
 import com.example.todo.util.TrailingIconState
 
-/*ListAppBar
+/*ListAppBar (UI 데이터, 검색 바 상태, 검색 문자)
 * 상단 작업 목록 바
 * - 작업 검색
 * - 작업 정렬
@@ -37,6 +37,12 @@ fun ListAppBar(
     searchAppBarState: SearchAppBarState,
     searchTextState: String,
 ) {
+    /*검색 바 상태
+    *닫혀 있을 때
+    * - 기본바: 검색 아이콘 - 클릭시 검색바 상태는 열림
+    *열려 있을 때
+    * - 검색바 : 현재 텍스트, 텍스트 변경시 - ViewModel에 텍스트 대입, 닫는 아이콘 - 클릭시 닫음 상태 변경 후 문자 삭제
+    * */
     when (searchAppBarState) {
         SearchAppBarState.CLOSED -> {
             DefaultListAppBar(
@@ -219,6 +225,8 @@ fun DeleteAllAction(
     }
 }
 
+/*SearchAppBar (받은 문자, 바꾼 문자, 닫았을 때, 문자 검색 아이콘 클릭시)
+* */
 @Composable
 fun SearchAppBar(
     text: String,
@@ -226,10 +234,11 @@ fun SearchAppBar(
     onCloseClicked: () -> Unit,
     onSearchClicked: (String) -> Unit,
 ) {
+    // 아이콘 초기 상태 기억 - 안에 내용 삭제 준비
     var trailingIconState by remember {
         mutableStateOf(TrailingIconState.READY_TO_DELETE)
     }
-
+    // AppBar 배경(Surface)를 만듬, elevation - 그림자 있는 배경 생성
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -237,6 +246,13 @@ fun SearchAppBar(
         elevation = AppBarDefaults.TopAppBarElevation,
         color = MaterialTheme.colors.topAppBarBackgroundColor
     ) {
+        /*TextField
+        * 문자를 넣을 수 있는 Field 생성
+        * value - 넣는 값, onValueChange - 변경 값, placeholder - 짧은 도움말 생성
+        * alpha - 내용 중요성 강조 할 수 있음
+        * singleLine - 한줄만 사용 할건지 선택
+        * leadingIcon - TextField 앞 아이콘 , trailingIcon - TextField 뒤 아이콘
+        * */
         TextField(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -273,6 +289,8 @@ fun SearchAppBar(
             trailingIcon = {
                 IconButton(
                     onClick = {
+                        /*삭제 준비일 때 - 텍스트 삭제 및 닫을 준비
+                        * 닫을 준비일 때 - 텍스트 존재시 다시 삭제, 텍스트 없을시 닫고 원래 삭제 준비 상태로*/
                         when (trailingIconState) {
                             TrailingIconState.READY_TO_DELETE -> {
                                 onTextChange("")
@@ -296,14 +314,18 @@ fun SearchAppBar(
                     )
                 }
             },
+            // 키보드 검색 아이콘 추가
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Search
             ),
+            // 키보드 문자 검색 행동 추가
             keyboardActions = KeyboardActions(
                 onSearch = {
                     onSearchClicked(text)
                 }
             ),
+            /*TextField Color
+            * 커서 색상, 테두리 강조, 사용하지 않을 때, 미강조, 미강조 라벨, 배경 색상*/
             colors = TextFieldDefaults.textFieldColors(
                 cursorColor = MaterialTheme.colors.topAppBarContentColor,
                 focusedIndicatorColor = Color.Transparent,

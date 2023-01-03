@@ -11,7 +11,8 @@ import com.example.todo.util.Constants.LIST_SCREEN
 
 /*SetupNavigation
 * - Navigation 초기 설정 기능 (Host - NavController 연결)
-* - NavHost 속 이동할 모든 Composable 존재 (list, task, splash)*/
+* - NavHost 속 이동할 모든 Composable 존재 (list, task, splash)
+* - shareViewModel - UI 관련 데이터를 받음*/
 @Composable
 fun SetupNavigation(
     navController: NavHostController,

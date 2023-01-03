@@ -46,7 +46,7 @@ fun ListScreen(
 
 /*ListFab
 * - 할일 목록 추가 버튼 (이미지, 내용, 색깔등 추가 가능)
-* TODO: onFabClicked 왜 -1일까 ?
+* - 인덱스가 0 부터 시작하니 클릭 하기 전에는 -1로 지정한것임
 *  */
 @Composable
 fun ListFab(

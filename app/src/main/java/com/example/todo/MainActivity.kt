@@ -27,7 +27,13 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    // Host 나중 초기화
+    //Host 나중 초기화
+
+    /* viewModel
+    *  UI 관련 데이터를 저장하고 관리하는 역할
+    *
+    * by
+    * -구성을 활용한 패턴, 모든 동작들을 소유하고 있는 객체에게 모두 위임하는 형식*/
     private lateinit var navController: NavHostController
     private val sharedViewModel: SharedViewModel by viewModels()
 

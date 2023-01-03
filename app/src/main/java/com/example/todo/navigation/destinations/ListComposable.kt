@@ -11,7 +11,8 @@ import com.example.todo.util.Constants.LIST_SCREEN
 
 /*NavGraphBuilder
 * listComposable 관련 Composable 분할
-* listComposable - Task Screen 인자를 받음*/
+* listComposable - Task Screen 인자를 받음
+* shareViewModel - UI 관련 데이터를 받음*/
 fun NavGraphBuilder.listComposable(
     navigateToTaskScreen: (taskId: Int) -> Unit,
     sharedViewModel: SharedViewModel
