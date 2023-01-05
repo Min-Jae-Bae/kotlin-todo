@@ -18,18 +18,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 import com.example.todo.ui.theme.*
+import com.example.todo.util.RequestState
 
 /*ListContent
-* 모든 작업 목록, 작업 번호 순서*/
+* - tasks - 작업 목록에 대한 요청 상태를 확인함
+* - 작업 데이터 요청이 성공하고 작업 데이터가 비어있다면 비어있는 목록을 보여준다
+* 그 이외에는 작업 목록을 보여준다.*/
 @Composable
 fun ListContent(
+    tasks: RequestState<List<ToDoTask>>,
+    navigateToTaskScreen: (taskId: Int) -> Unit,
+) {
+    if (tasks is RequestState.Success) {
+        if (tasks.data.isEmpty()) {
+            EmptyContent()
+        } else {
+            DisplayTasks(
+                tasks = tasks.data,
+                navigateToTaskScreen = navigateToTaskScreen
+            )
+        }
+    }
+}
+
+/*DisplayTasks
+* 모든 작업 목록, 작업 번호 순서*/
+@Composable
+fun DisplayTasks(
     tasks: List<ToDoTask>,
-    navigateToTaskScreen: (taskId: Int) -> Unit
+    navigateToTaskScreen: (taskId: Int) -> Unit,
 ) {
     /*LazyColumn - 세로로 아이템 표시하는 RecyclerView
     * LazyRow - 가로로 아이템 표시하는 RecyclerView
-    * items - item 리스트를 추가할 수 있는 기능
-    * */
+    * items - item 리스트를 추가할 수 있는 기능*/
     LazyColumn {
         /*items
         * 작업들(할일), key 를 작업 아이디로 지정
@@ -100,8 +121,7 @@ fun TaskItem(
                 ) {
                     Canvas(
                         modifier = Modifier
-                            .width(PRIORITY_INDICATOR_SIZE)
-                            .height(PRIORITY_INDICATOR_SIZE)
+                            .size(PRIORITY_INDICATOR_SIZE)
                     ) {
                         drawCircle(
                             color = toDoTask.priority.color
