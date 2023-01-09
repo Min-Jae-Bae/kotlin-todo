@@ -17,6 +17,7 @@ import com.example.todo.R
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 
+/*TaskAppBae - navigateToListScreen(목록 추가 행동)*/
 @Composable
 fun TaskAppBar(
     navigateToListScreen: (Action) -> Unit,
@@ -24,6 +25,10 @@ fun TaskAppBar(
     NewTaskAppBar(navigateToListScreen = navigateToListScreen)
 }
 
+/*NewTaskAppBae
+* TopAppBar(상단 기능)
+* - navigationIcon - 앞 아이콘( 리스트 화면으로 이등 클릭)
+* - actions - 행동 기능(추가 버튼)*/
 @Composable
 fun NewTaskAppBar(
     navigateToListScreen: (Action) -> Unit,
@@ -45,6 +50,10 @@ fun NewTaskAppBar(
     )
 }
 
+/*BackAction
+* 뒤로 행동
+* IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
+* Icon - 아이콘 부여*/
 @Composable
 fun BackAction(
     onBackClicked: (Action) -> Unit,
@@ -58,6 +67,8 @@ fun BackAction(
     }
 }
 
+/*AddAction
+* 추가 행동*/
 @Composable
 fun AddAction(
     onAddClicked: (Action) -> Unit,
@@ -71,6 +82,11 @@ fun AddAction(
     }
 }
 
+/*ExistingTaskAppBar ( 작업 선택, 목록 스크린 이동 )
+* 확장 작업 바
+* TopAppBar(상단 기능)
+* - navigationIcon - 앞 아이콘(리스트 화면으로 이등 클릭)
+* - actions - 행동 기능(삭제, 업데이트 버튼)*/
 @Composable
 fun ExistingTaskAppBar(
     selectedTask: ToDoTask,
@@ -96,6 +112,10 @@ fun ExistingTaskAppBar(
     )
 }
 
+/*CloseAction
+* 종료 행동
+* IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
+* Icon - 아이콘 부여*/
 @Composable
 fun CloseAction(
     onCloseClicked: (Action) -> Unit,
@@ -109,6 +129,10 @@ fun CloseAction(
     }
 }
 
+/*DeleteAction
+* 삭제 행동
+* IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
+* Icon - 아이콘 부여*/
 @Composable
 fun DeleteAction(
     onDeleteClicked: (Action) -> Unit,
@@ -122,6 +146,10 @@ fun DeleteAction(
     }
 }
 
+/*UpdateAction
+* 업데이트 행동
+* IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
+* Icon - 아이콘 부여*/
 @Composable
 fun UpdateAction(
     onUpdateClicked: (Action) -> Unit,

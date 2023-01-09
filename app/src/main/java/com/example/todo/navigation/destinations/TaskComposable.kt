@@ -17,15 +17,18 @@ fun NavGraphBuilder.taskComposable(
     navigateToListScreen: (Action) -> Unit,
 ) {
     /*composable - argument 통해 이동
-    * TASK_SCREEN 길에서 해당 taskId 받아 이동 */
+    * TASK_SCREEN 길에서 해당 taskId 받아 이동
+    *
+    * NavBackStackEntry
+    * - navBackStackEntry에서 arguments목록을 가져온 다음 필요한 인수를 검색하고 가져와서 컴포저블 화면으로 전달.*/
     composable(
         route = TASK_SCREEN,
         arguments = listOf(navArgument(TASK_ARGUMENT_KEY) {
             type = NavType.IntType
         })
     ) { navBackStackEntry ->
+        /*현재 경로에 백 스택에 있는 작업 아이디를 검색하고 가져옴*/
         val taskId = navBackStackEntry.arguments!!.getInt(TASK_ARGUMENT_KEY)
-
         TaskScreen(navigateToListScreen = navigateToListScreen)
     }
 }
