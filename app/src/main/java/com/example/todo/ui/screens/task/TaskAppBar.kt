@@ -17,12 +17,22 @@ import com.example.todo.R
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 
-/*TaskAppBae - navigateToListScreen(목록 추가 행동)*/
+/*TaskAppBae - selectedTask(작업 선택 - ? = null 존재, 선택하지 않을 수 있음을 의미), navigateToListScreen(목록 추가 행동)
+* 작업을 선택하지 않는다면 NewTaskAppBar를 보여주고
+* 작업을 선택한다면 확장된 ExistingTaskAppBar를 보여주세요 */
 @Composable
 fun TaskAppBar(
+    selectedTask: ToDoTask?,
     navigateToListScreen: (Action) -> Unit,
 ) {
-    NewTaskAppBar(navigateToListScreen = navigateToListScreen)
+    if (selectedTask == null) {
+        NewTaskAppBar(navigateToListScreen = navigateToListScreen)
+    } else {
+        ExistingTaskAppBar(
+            selectedTask = selectedTask,
+            navigateToListScreen = navigateToListScreen
+        )
+    }
 }
 
 /*NewTaskAppBae

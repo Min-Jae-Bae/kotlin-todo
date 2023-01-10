@@ -1,5 +1,7 @@
 package com.example.todo.navigation.destinations
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
@@ -14,6 +16,7 @@ import com.example.todo.util.Constants.TASK_SCREEN
 * taskComposable 관련 Composable 분할
 * navigateToListScreen - List Screen 인자를 받음*/
 fun NavGraphBuilder.taskComposable(
+    sharedViewModel: SharedViewModel,
     navigateToListScreen: (Action) -> Unit,
 ) {
     /*composable - argument 통해 이동
@@ -29,6 +32,11 @@ fun NavGraphBuilder.taskComposable(
     ) { navBackStackEntry ->
         /*현재 경로에 백 스택에 있는 작업 아이디를 검색하고 가져옴*/
         val taskId = navBackStackEntry.arguments!!.getInt(TASK_ARGUMENT_KEY)
-        TaskScreen(navigateToListScreen = navigateToListScreen)
+        sharedViewModel.getSelectedTask(taskId = taskId)
+        val selectedTask by sharedViewModel.selectedTask.collectAsState()
+
+        TaskScreen(
+            selectedTask = selectedTask,
+            navigateToListScreen = navigateToListScreen)
     }
 }
