@@ -3,7 +3,10 @@ package com.example.todo.ui.screens.task
 import android.annotation.SuppressLint
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
+import com.example.todo.ui.viewmodels.SharedViewModel
 import com.example.todo.util.Action
 
 /*TaskScreen - 작업 화면
@@ -13,8 +16,13 @@ import com.example.todo.util.Action
 @Composable
 fun TaskScreen(
     selectedTask: ToDoTask?,
+    sharedViewModel: SharedViewModel,
     navigateToListScreen: (Action) -> Unit,
 ) {
+    val title: String by sharedViewModel.title
+    val description: String by sharedViewModel.description
+    val priority: Priority by sharedViewModel.priority
+
     Scaffold(
         topBar = {
             TaskAppBar(
@@ -23,7 +31,20 @@ fun TaskScreen(
             )
         },
         content = {
-
+            TaskContent(
+                title = "",
+                onTitleChange = {
+                    sharedViewModel.title.value = it
+                },
+                description = "",
+                onDescriptionChange = {
+                    sharedViewModel.description.value = it
+                },
+                priority = Priority.LOW,
+                onPrioritySelected = {
+                    sharedViewModel.priority.value = it
+                }
+            )
         }
     )
 }
