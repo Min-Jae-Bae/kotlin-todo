@@ -36,6 +36,8 @@ fun NavGraphBuilder.taskComposable(
         sharedViewModel.getSelectedTask(taskId = taskId)
         val selectedTask by sharedViewModel.selectedTask.collectAsState()
 
+        /*LaunchedEffect
+        * 작업 아이디에 따른 작업 업데이트를 suspend fun에 따른 재수행*/
         LaunchedEffect(key1 = taskId) {
             sharedViewModel.updateTaskFields(selectedTask = selectedTask)
         }

@@ -16,6 +16,9 @@ import com.example.todo.data.models.Priority
 import com.example.todo.ui.theme.LARGE_PADDING
 import com.example.todo.ui.theme.MEDIUM_PADDING
 
+/*TaskContent - 제목, 설명, 중요성 변경
+* Column - 세로 정렬
+* */
 @Composable
 fun TaskContent(
     title: String,
@@ -30,6 +33,10 @@ fun TaskContent(
         .background(MaterialTheme.colors.background)
         .padding(all = LARGE_PADDING)
     ) {
+        /*OutlinedTextField - title
+        * 텍스트를 넣을 수 있는 공간을 생성
+        * label - 안에 무엇을 넣을 건지 알려줌
+        * singleLine - 한줄만 가능*/
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = title,
@@ -38,10 +45,14 @@ fun TaskContent(
             textStyle = MaterialTheme.typography.body1,
             singleLine = true
         )
+        /*Divider
+        * 선을 그어서 공간을 만들어주는 기능*/
         Divider(
             modifier = Modifier.height(MEDIUM_PADDING),
             color = MaterialTheme.colors.background
         )
+        /*PriorityDropDown
+        * 중요성을 선택하는 메뉴판*/
         PriorityDropDown(
             priority = priority,
             onPrioritySelected = onPrioritySelected

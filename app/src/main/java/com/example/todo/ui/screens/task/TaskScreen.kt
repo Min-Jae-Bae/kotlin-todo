@@ -1,9 +1,12 @@
 package com.example.todo.ui.screens.task
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 import com.example.todo.ui.viewmodels.SharedViewModel
@@ -23,18 +26,36 @@ fun TaskScreen(
     val description: String by sharedViewModel.description
     val priority: Priority by sharedViewModel.priority
 
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
+            /*TaskAppBar - 작업 선택, ListScreen 이동
+            * No_ACTION일 때 - ListScreen
+            * 다른 액션일 때 - 제목, 설명이 존재하면 ListScreen으로 이동하고 그렇지 않은 경우 Toast를 보여준다. */
             TaskAppBar(
                 selectedTask = selectedTask,
-                navigateToListScreen = navigateToListScreen
+                navigateToListScreen = { action ->
+                    if (action == Action.NO_ACTION) {
+                        navigateToListScreen(action)
+                    } else {
+                        if (sharedViewModel.validateFields()) {
+                            navigateToListScreen(action)
+                        } else {
+                            displayToast(context = context)
+                        }
+                    }
+                }
             )
         },
         content = {
+            /*TaskContent
+            * Default 값을 지정하고
+            * 변경되는 값을 지정*/
             TaskContent(
                 title = "",
                 onTitleChange = {
-                    sharedViewModel.title.value = it
+                    sharedViewModel.updateTitle(it)
                 },
                 description = "",
                 onDescriptionChange = {
@@ -47,4 +68,12 @@ fun TaskScreen(
             )
         }
     )
+}
+
+fun displayToast(context: Context) {
+    Toast.makeText(
+        context,
+        "Fields Empty",
+        Toast.LENGTH_SHORT
+    ).show()
 }

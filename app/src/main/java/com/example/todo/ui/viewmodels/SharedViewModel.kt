@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 import com.example.todo.data.repositories.ToDoRepository
+import com.example.todo.util.Constants.MAX_TITLE_LENGTH
 import com.example.todo.util.RequestState
 import com.example.todo.util.SearchAppBarState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -83,6 +84,9 @@ class SharedViewModel @Inject constructor(
         }
     }
 
+    /*updateTaskFields - 할일을 선택(선택안할 수 도 있음)
+    * 선택되었을 때 각 값에 선택한 정보를 넣음
+    * 선택되지 않았을 때 기본 값으로 설정*/
     fun updateTaskFields(selectedTask: ToDoTask?) {
         if (selectedTask != null) {
             id.value = selectedTask.id
@@ -95,5 +99,20 @@ class SharedViewModel @Inject constructor(
             description.value = ""
             priority.value = Priority.LOW
         }
+    }
+
+    /*updateTitle - 제목을 업데이트
+    * 길이가 20까지만 입력 가능*/
+    fun updateTitle(newTitle: String) {
+        if (newTitle.length < MAX_TITLE_LENGTH) {
+            title.value = newTitle
+        }
+    }
+
+    /*validateFields
+    * 제목과 설명이 둘 중에 하나만 비어 있어도 false 반환*/
+    fun validateFields(): Boolean {
+        return title.value.isNotEmpty() && description.value.isNotEmpty()
+
     }
 }
