@@ -53,15 +53,15 @@ fun TaskScreen(
             * Default 값을 지정하고
             * 변경되는 값을 지정*/
             TaskContent(
-                title = "",
+                title = title,
                 onTitleChange = {
                     sharedViewModel.updateTitle(it)
                 },
-                description = "",
+                description = description,
                 onDescriptionChange = {
                     sharedViewModel.description.value = it
                 },
-                priority = Priority.LOW,
+                priority = priority,
                 onPrioritySelected = {
                     sharedViewModel.priority.value = it
                 }

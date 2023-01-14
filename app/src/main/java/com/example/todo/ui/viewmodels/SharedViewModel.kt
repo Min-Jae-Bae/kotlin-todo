@@ -7,10 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 import com.example.todo.data.repositories.ToDoRepository
+import com.example.todo.util.Action
 import com.example.todo.util.Constants.MAX_TITLE_LENGTH
 import com.example.todo.util.RequestState
 import com.example.todo.util.SearchAppBarState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -32,6 +34,9 @@ import javax.inject.Inject
 class SharedViewModel @Inject constructor(
     private val repository: ToDoRepository,
 ) : ViewModel() {
+
+    //action 상태 NO_ACTION 초기화
+    val action: MutableState<Action> = mutableStateOf(Action.NO_ACTION)
 
     val id: MutableState<Int> = mutableStateOf(0)
     val title: MutableState<String> = mutableStateOf("")
@@ -82,6 +87,86 @@ class SharedViewModel @Inject constructor(
                 _selectedTask.value = task
             }
         }
+    }
+
+    /*Scope
+    * GlobalScope - 별도 생명 주기 관리가 필요 없으며 앱 시작 ~ 종류 긴 시간 실행되는 코루틴에 적합
+    * CoroutineScope - 버튼을 눌러 다운로드하거나 서버와 통신할 때만 시작, 완료되면 종료하는 용도로 사용
+    * viewModelScope - Jetpack 아키텍처의 뷰모델 컴포넌트를 사용할 때 viewModel에서 사용하기 위해 제공되는 Scope
+    * 이 코루틴은 viewModel이 destroy될 때 자동으로 취소한다.
+    * */
+
+    /*addTask
+    * viewModel 관리 Coroutine Scope를 코투린 실행, 상태 관리하는(launch - IO 작업)를 실행시킨다.
+    * IO는 이미지 다운로드, 파일 입출력, 네트워킹 , DB작업을 할 때 사용합니다.
+    * 추가하고 싶은 작업을 변수에 담는다.
+    * repository에 존재하는 addTask를 불러 작업을 넣는다.*/
+    private fun addTask() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val toDoTask = ToDoTask(
+                title = title.value,
+                description = description.value,
+                priority = priority.value
+            )
+            repository.addTask(toDoTask = toDoTask)
+        }
+    }
+
+    /*updateTask
+    * 추가 되어있는 작업을 갱신
+    * repository에 존재하는 updateTask를 수행한다.*/
+    private fun updateTask() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val toDoTask = ToDoTask(
+                id = id.value,
+                title = title.value,
+                description = description.value,
+                priority = priority.value
+            )
+            repository.updateTask(toDoTask = toDoTask)
+        }
+    }
+
+    /*deleteTask
+    * 작업을 삭제하는 역할
+    * repositoru에 존재하는 deleteTask를 수행한다.*/
+    private fun deleteTask() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val toDoTask = ToDoTask(
+                id = id.value,
+                title = title.value,
+                description = description.value,
+                priority = priority.value
+            )
+            repository.deleteTask(toDoTask = toDoTask)
+        }
+    }
+
+    /*handleDatabaseAction
+    * 사용자 행동을 조작
+    * Action에 해당하는 Database 작업을 수행한다.*/
+    fun handleDatabaseAction(action: Action) {
+        when (action) {
+            Action.ADD -> {
+                addTask()
+            }
+            Action.UPDATE -> {
+                updateTask()
+            }
+            Action.DELETE -> {
+                deleteTask()
+            }
+            Action.DELETE_ALL -> {
+
+            }
+            Action.UNDO -> {
+                addTask()
+            }
+            else -> {
+
+            }
+        }
+        this.action.value = Action.NO_ACTION
     }
 
     /*updateTaskFields - 할일을 선택(선택안할 수 도 있음)
