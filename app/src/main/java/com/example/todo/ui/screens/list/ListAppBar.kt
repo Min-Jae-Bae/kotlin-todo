@@ -23,6 +23,7 @@ import com.example.todo.components.PriorityItem
 import com.example.todo.data.models.Priority
 import com.example.todo.ui.theme.*
 import com.example.todo.ui.viewmodels.SharedViewModel
+import com.example.todo.util.Action
 import com.example.todo.util.SearchAppBarState
 import com.example.todo.util.TrailingIconState
 
@@ -30,7 +31,7 @@ import com.example.todo.util.TrailingIconState
 * 상단 작업 목록 바
 * - 작업 검색
 * - 작업 정렬
-* - 작업 삭제*/
+* - 작업 삭제 */
 @Composable
 fun ListAppBar(
     sharedViewModel: SharedViewModel,
@@ -51,7 +52,10 @@ fun ListAppBar(
                         SearchAppBarState.OPENED
                 },
                 onSortClicked = {},
-                onDeleteClicked = {}
+                onDeleteAllClicked = {
+                    // UI 관련 데이터 Action 값이 DELETE_ALL
+                    sharedViewModel.action.value = Action.DELETE_ALL
+                }
             )
         }
         else -> {
@@ -65,7 +69,10 @@ fun ListAppBar(
                         SearchAppBarState.CLOSED
                     sharedViewModel.searchTextState.value = ""
                 },
-                onSearchClicked = {}
+                onSearchClicked = {
+                    // UI 관련 데이터 DB 검색 기능을 실행 한다
+                    sharedViewModel.searchDatabase(searchQuery = it)
+                }
             )
         }
     }
@@ -80,7 +87,7 @@ fun ListAppBar(
 fun DefaultListAppBar(
     onSearchClicked: () -> Unit,
     onSortClicked: (Priority) -> Unit,
-    onDeleteClicked: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
 ) {
     TopAppBar(
         title = {
@@ -93,7 +100,7 @@ fun DefaultListAppBar(
             ListAppBarActions(
                 onSearchClicked = onSearchClicked,
                 onSortClicked = onSortClicked,
-                onDeleteClicked = onDeleteClicked
+                onDeleteAllClicked = onDeleteAllClicked
             )
         },
         backgroundColor = MaterialTheme.colors.topAppBarBackgroundColor
@@ -106,11 +113,11 @@ fun DefaultListAppBar(
 fun ListAppBarActions(
     onSearchClicked: () -> Unit,
     onSortClicked: (Priority) -> Unit,
-    onDeleteClicked: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
 ) {
     SearchAction(onSearchClicked = onSearchClicked)
     SortAction(onSortClicked = onSortClicked)
-    DeleteAllAction(onDeleteClicked = onDeleteClicked)
+    DeleteAllAction(onDeleteAllClicked = onDeleteAllClicked)
 }
 
 /*SearchAction
@@ -192,7 +199,7 @@ fun SortAction(
 * 하단 메뉴 생성(클릭 속성: 확장 - true, 확장 취소 - false) - 삭제 Text 클릭시(비확장, 삭제 클릭)*/
 @Composable
 fun DeleteAllAction(
-    onDeleteClicked: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -211,7 +218,7 @@ fun DeleteAllAction(
             DropdownMenuItem(
                 onClick = {
                     expanded = false
-                    onDeleteClicked()
+                    onDeleteAllClicked()
                 }
             ) {
                 Text(
@@ -345,7 +352,7 @@ fun DefaultListAppBarPreview() {
     DefaultListAppBar(
         onSearchClicked = {},
         onSortClicked = {},
-        onDeleteClicked = {}
+        onDeleteAllClicked = {}
     )
 }
 

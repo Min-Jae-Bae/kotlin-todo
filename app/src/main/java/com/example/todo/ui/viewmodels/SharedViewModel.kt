@@ -47,6 +47,38 @@ class SharedViewModel @Inject constructor(
         mutableStateOf(SearchAppBarState.CLOSED)
     val searchTextState: MutableState<String> = mutableStateOf("")
 
+    /*_searchedTasks 와 searchedTasks
+    * _searchedTasks는 변경 가능한 상태 흐름 요청 상태의 작업 목록을 Idle(쉬고 있는 상태)로 초기화한다.
+    * searchedTasks는 shareViewModel 내부에서 사용하기 위해 변경 불가능한
+    * 변수로 _searchedTasks를 지정해서 상태를 사용한다.*/
+    private val _searchedTasks =
+        MutableStateFlow<RequestState<List<ToDoTask>>>(RequestState.Idle)
+    val searchedTasks: StateFlow<RequestState<List<ToDoTask>>> = _searchedTasks
+
+    /*searchDatabase - (검색할 내용)
+    * DB 검색 기능
+    * 변경 가능한 검색 작업 상태를 (진행중인)
+    *
+    * 발생하는 오류를 잡을거야 viewModelScope을 생성하여 viewModel과 코루틴이 함께 종류할 수 있게 실행할거야
+    * repository DB 검색 기능은 검색 쿼리를 받아 (변수 검색을 하기 위해서는 "%(이 사이에 변수를 지정해)%")
+    * 그리고 검색 DB 관련 검색 작업 들을 모을거야 그 작업들은 작업 검색 값에 요청 상태 성공(검색 작업 이름)을 넣을거야
+    * 예외가 발생한다면 작업 검색 값에 요청 상태(오류)를 넣을거야
+    * 마지막으로 검색 바의 상태 값을 -> 전환으로 바꿨어*/
+    fun searchDatabase(searchQuery: String) {
+        _searchedTasks.value = RequestState.Loading
+        try {
+            viewModelScope.launch {
+                repository.searchDatabase(searchQuery = "%$searchQuery%")
+                    .collect { searchedTasks ->
+                        _searchedTasks.value = RequestState.Success(searchedTasks)
+                    }
+            }
+        } catch (e: Exception) {
+            _searchedTasks.value = RequestState.Error(e)
+        }
+        searchAppBarState.value = SearchAppBarState.TRIGGERED
+    }
+
     /* 언더바(_) 쓰임
     * 외부에서 상태를 변경하지 못하게 하고, 내부(ShareViewModel)에서는 변경이 가능하게 하기 위한 목적*/
     // _allTasks = 할일 작업 목록의 요청 상태 변경 가능 상태 흐름을 쉬고 있는 상태로 초기화
@@ -110,6 +142,8 @@ class SharedViewModel @Inject constructor(
             )
             repository.addTask(toDoTask = toDoTask)
         }
+        // 작업을 추가하면 검색 바를 종료 상태로 만들어라
+        searchAppBarState.value = SearchAppBarState.CLOSED
     }
 
     /*updateTask
@@ -142,6 +176,19 @@ class SharedViewModel @Inject constructor(
         }
     }
 
+    /*deleteAllTasks
+    * 모든 작업 삭제
+    * vieModelScope으로 ViewModel 관리 Coroutine Scope 코투린 실행 시킨다
+    * 이렇게 실행 시키는 이유는 Compose가 비동기 UI이기 때문에 컴포넌트를 사용할 때
+    * ViewModel이 destroy될 때 자동으로 같이 destroy 되기 위함이다.
+    * 상태 관리 IO - DB 작업 용도로 사용했습니다.
+    * repository에 존재하는 deleteAllTasks를 실행시킨다.*/
+    private fun deleteAllTasks() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteAllTasks()
+        }
+    }
+
     /*handleDatabaseAction
     * 사용자 행동을 조작
     * Action에 해당하는 Database 작업을 수행한다.*/
@@ -157,7 +204,7 @@ class SharedViewModel @Inject constructor(
                 deleteTask()
             }
             Action.DELETE_ALL -> {
-
+                deleteAllTasks()
             }
             Action.UNDO -> {
                 addTask()

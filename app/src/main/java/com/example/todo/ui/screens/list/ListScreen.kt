@@ -1,7 +1,6 @@
 package com.example.todo.ui.screens.list
 
 import android.annotation.SuppressLint
-import android.drm.DrmStore
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -62,6 +61,7 @@ fun ListScreen(
     /*collectAsState
     * UI 데이터 모든 작업 Flow 수집*/
     val allTasks by sharedViewModel.allTasks.collectAsState()
+    val searchedTasks by sharedViewModel.searchedTasks.collectAsState()
     val searchAppBarState: SearchAppBarState by sharedViewModel.searchAppBarState
     val searchTextState: String by sharedViewModel.searchTextState
 
@@ -96,7 +96,9 @@ fun ListScreen(
         },
         content = {
             ListContent(
-                tasks = allTasks,
+                allTasks = allTasks,
+                searchedTasks = searchedTasks,
+                searchAppBarState = searchAppBarState,
                 navigateToTaskScreen = navigateToTaskScreen
             )
         },
@@ -138,7 +140,7 @@ fun DisplaySnackBar(
         if (action != Action.NO_ACTION) {
             scope.launch {
                 val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
-                    message = "${action.name}: $taskTitle",
+                    message = setMessage(action = action, taskTitle = taskTitle),
                     actionLabel = "Ok"
                 )
                 undoDeletedTask(
@@ -151,6 +153,19 @@ fun DisplaySnackBar(
     }
 }
 
+/*setMessage - (행동, 작업 제목) -> 문자열 반환
+* DELETE_ALL 클릭시 "All Tasks Removed" 반환
+* 그 이외 클릭시 행동 이름과 작업 목록을 반환*/
+private fun setMessage(action: Action, taskTitle: String): String {
+    return when (action) {
+        Action.DELETE_ALL -> "All Tasks Removed"
+        else -> "${action.name}: $taskTitle"
+    }
+}
+
+/*setActionLabel - (행동) -> 문자열 반환
+* action 이름이 DELETE 일때 "UNDO" 반환
+* 그 이외는 "OK" 반환*/
 private fun setActionLabel(action: Action): String {
     return if (action.name == "DELETE") {
         "UNDO"

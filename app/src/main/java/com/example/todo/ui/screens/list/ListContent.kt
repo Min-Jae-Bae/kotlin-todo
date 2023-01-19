@@ -19,25 +19,55 @@ import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 import com.example.todo.ui.theme.*
 import com.example.todo.util.RequestState
+import com.example.todo.util.SearchAppBarState
 
-/*ListContent
-* - tasks - 작업 목록에 대한 요청 상태를 확인함
-* - 작업 데이터 요청이 성공하고 작업 데이터가 비어있다면 비어있는 목록을 보여준다
-* 그 이외에는 작업 목록을 보여준다.*/
+/*ListContent - (모든 작업 상태 목록, 검색 작업 상태 목록, 검색 바 상태, 작업 스크린 이동)
+* 검색바 상태가 TRIGGERED(바뀌고)
+* 만약 검색 작업들이 요청 상태 Success와 자료형이 일치한다면 List 내용(검색 작업 데이터 조작) UI를 보여주고
+* 만약 검색 작업들이 요청 상태 Success와 자료형이 불일치하고 모든 작업이 요청상태 Success와 일치하다면
+* List 내용(모든 작업 데이터 조작) UI를 보여주세요
+*
+* is는 타입이 일치하는지 보여주고, as는 타입을 바꿔주는 역할을 한다.*/
 @Composable
 fun ListContent(
-    tasks: RequestState<List<ToDoTask>>,
+    allTasks: RequestState<List<ToDoTask>>,
+    searchedTasks: RequestState<List<ToDoTask>>,
+    searchAppBarState: SearchAppBarState,
     navigateToTaskScreen: (taskId: Int) -> Unit,
 ) {
-    if (tasks is RequestState.Success) {
-        if (tasks.data.isEmpty()) {
-            EmptyContent()
-        } else {
-            DisplayTasks(
-                tasks = tasks.data,
+    if (searchAppBarState == SearchAppBarState.TRIGGERED) {
+        if (searchedTasks is RequestState.Success) {
+            HandleListContent(
+                tasks = searchedTasks.data,
                 navigateToTaskScreen = navigateToTaskScreen
             )
+        } else {
+            if (allTasks is RequestState.Success) {
+                HandleListContent(
+                    tasks = allTasks.data,
+                    navigateToTaskScreen = navigateToTaskScreen
+                )
+            }
         }
+    }
+}
+
+/*HandleListContent - (작업, 작업 스크린 이동)
+* List 내용 조작 UI
+* 만약 tasks가 없을 때는 비어 있는 UI를 보여주고
+* tasks가 존재할 때는 모든 작업과 작업 스크린 이동 가능한 작업 목록 UI를 보여준다.*/
+@Composable
+fun HandleListContent(
+    tasks: List<ToDoTask>,
+    navigateToTaskScreen: (taskId: Int) -> Unit,
+) {
+    if (tasks.isEmpty()) {
+        EmptyContent()
+    } else {
+        DisplayTasks(
+            tasks = tasks,
+            navigateToTaskScreen = navigateToTaskScreen
+        )
     }
 }
 
