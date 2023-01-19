@@ -6,7 +6,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -14,6 +14,7 @@ import com.example.todo.ui.theme.topAppBarBackgroundColor
 import com.example.todo.ui.theme.topAppBarContentColor
 import com.example.todo.util.Action
 import com.example.todo.R
+import com.example.todo.components.DisplayAlertDialog
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 
@@ -116,8 +117,10 @@ fun ExistingTaskAppBar(
         },
         backgroundColor = MaterialTheme.colors.topAppBarBackgroundColor,
         actions = {
-            DeleteAction(onDeleteClicked = navigateToListScreen)
-            UpdateAction(onUpdateClicked = navigateToListScreen)
+            ExistingTaskAppBarActions(
+                selectedTask = selectedTask,
+                navigateToListScreen = navigateToListScreen
+            )
         }
     )
 }
@@ -139,15 +142,49 @@ fun CloseAction(
     }
 }
 
+/*ExistingTaskAppBarActions - (선택된 작업, List 화면 이동)
+* 기존 작업 바 행동들 보여주는 UI
+*
+* openDialog 상태를 닫혔있는 상태(false)로 초기화하고 기억한다
+* DisplayAlertDialog - openDialog(true), closeDialog(false), onYesClicked(삭제를 수행하고 List UI 이동)
+* DeleteAction - Delete 아이콘 클릭시 Dialog 오픈
+* UpdateAction - Update 아이콘 클릭시 List UI로 이동
+* */
+@Composable
+fun ExistingTaskAppBarActions(
+    selectedTask: ToDoTask,
+    navigateToListScreen: (Action) -> Unit,
+) {
+    var openDialog by remember { mutableStateOf(false) }
+
+    DisplayAlertDialog(
+        title = stringResource(
+            id = R.string.delete_task,
+            selectedTask.title
+        ),
+        message = stringResource(
+            id = R.string.delete_task_confirmation,
+            selectedTask.title
+        ),
+        openDialog = openDialog,
+        closeDialog = { openDialog = false },
+        onYesClicked = { navigateToListScreen(Action.DELETE) }
+    )
+    DeleteAction(onDeleteClicked = {
+        openDialog = true
+    })
+    UpdateAction(onUpdateClicked = navigateToListScreen)
+}
+
 /*DeleteAction
 * 삭제 행동
 * IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
 * Icon - 아이콘 부여*/
 @Composable
 fun DeleteAction(
-    onDeleteClicked: (Action) -> Unit,
+    onDeleteClicked: () -> Unit,
 ) {
-    IconButton(onClick = { onDeleteClicked(Action.DELETE) }) {
+    IconButton(onClick = { onDeleteClicked() }) {
         Icon(
             imageVector = Icons.Filled.Delete,
             contentDescription = stringResource(id = R.string.delete_icon),
