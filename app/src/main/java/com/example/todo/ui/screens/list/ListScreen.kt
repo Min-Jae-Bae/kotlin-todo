@@ -52,6 +52,7 @@ fun ListScreen(
     * 특정 키 값을 바탕으로 리컴포지션 해주는 기능 ( 즉 새로고침 같은 기능이라 할 수 있음 )*/
     LaunchedEffect(key1 = true) {
         sharedViewModel.getAllTasks()
+        sharedViewModel.readSortState()
     }
     /*shareViewModel action을 불러오기
     * by를 쓰는 이유 ? - 상속하지 않고 기존 기능을 그대로 사용하면서 새로운 기능을 추가할 때
@@ -62,6 +63,10 @@ fun ListScreen(
     * UI 데이터 모든 작업 Flow 수집*/
     val allTasks by sharedViewModel.allTasks.collectAsState()
     val searchedTasks by sharedViewModel.searchedTasks.collectAsState()
+    val sortState by sharedViewModel.sortState.collectAsState()
+    val lowPriorityTasks by sharedViewModel.lowPriorityTasks.collectAsState()
+    val highPriorityTasks by sharedViewModel.highPriorityTasks.collectAsState()
+
     val searchAppBarState: SearchAppBarState by sharedViewModel.searchAppBarState
     val searchTextState: String by sharedViewModel.searchTextState
 
@@ -98,6 +103,9 @@ fun ListScreen(
             ListContent(
                 allTasks = allTasks,
                 searchedTasks = searchedTasks,
+                lowPriorityTasks = lowPriorityTasks,
+                highPriorityTasks = highPriorityTasks,
+                sortState = sortState,
                 searchAppBarState = searchAppBarState,
                 navigateToTaskScreen = navigateToTaskScreen
             )
