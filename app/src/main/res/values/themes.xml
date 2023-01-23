@@ -4,4 +4,6 @@
     <style name="Theme.Todo" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@color/purple_700</item>
     </style>
+
+    <!--TODO: Night statusBarColor change Black-->
 </resources>
