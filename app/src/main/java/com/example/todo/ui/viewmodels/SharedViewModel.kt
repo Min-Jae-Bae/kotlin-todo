@@ -79,24 +79,42 @@ class SharedViewModel @Inject constructor(
         searchAppBarState.value = SearchAppBarState.TRIGGERED
     }
 
+    /*lowPriorityTasks - 해야할 작업 목록들의 상태 흐름 변수 지정
+    * 낮은 우선 순이 작업
+    * ToDoRepository(repository)에 존재하는 낮은 우선순위 정렬 기능을 불러오고
+    * Flow를 UI에서 사용하기 위해서는 StateFlow를 변환해주는 StateIn을 사용한다.*/
+
+    /*stateIn
+    * - Flow를 StateFlow를 변환해주는 기능
+    * scope은 StateFlow가 Flow로부터 데이터를 받을 CoroutineScope을 적는 곳.
+    * started는 Flow를 언제 받을지 적는 곳.
+    * initialValue: StateFlow에 저장될 초기 값을 적는 곳
+    * SharingStarted - 최초로 받는 사람이 생길때 부터 Flow를 받는다.*/
+
     val lowPriorityTasks: StateFlow<List<ToDoTask>> =
         repository.sortByLowPriority.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
-            emptyList()
+            initialValue = emptyList()
         )
 
     val highPriorityTasks: StateFlow<List<ToDoTask>> =
         repository.sortByHighPriority.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
-            emptyList()
+            initialValue = emptyList()
         )
 
+    /*_sortState - 정렬 상태
+    * 내부에서 상태를 변경할 수 있는 private 변수 우선순위 요청 상태를 쉬고 있는 중으로 초기화 한다
+    * 그리고 변경된 우선순위의 요청 상태 흐름을 내부에서 사용할 수 있게 불변의 변수를 만든다.*/
     private val _sortState =
         MutableStateFlow<RequestState<Priority>>(RequestState.Idle)
     val sortState: StateFlow<RequestState<Priority>> = _sortState
 
+    /*readSortState
+    * 정렬 상태를 가져오는 기능
+    * */
     fun readSortState() {
         _sortState.value = RequestState.Loading
         try {
