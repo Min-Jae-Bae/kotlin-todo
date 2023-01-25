@@ -60,7 +60,10 @@ fun ListScreen(
     val action by sharedViewModel.action
 
     /*collectAsState
-    * UI 데이터 모든 작업 Flow 수집*/
+    * UI 데이터 모든 작업 Flow 수집
+    * sortState - 정렬 상태 UI 데이터 작업 Flow 수집
+    * lowPriorityTasks - 낮은 우선순위 작업 UI 데이터 작업 Flow 수집
+    * highPriorityTasks - 높은 우선순위 작업 UI 데이터 작업 Flow 수집*/
     val allTasks by sharedViewModel.allTasks.collectAsState()
     val searchedTasks by sharedViewModel.searchedTasks.collectAsState()
     val sortState by sharedViewModel.sortState.collectAsState()

@@ -114,6 +114,11 @@ class SharedViewModel @Inject constructor(
 
     /*readSortState
     * 정렬 상태를 가져오는 기능
+    * 정렬 상태 값을 로딩 상태로 변경한다.
+    * coroutine과 viewModel를 같이 control 할 수 있게 실행하고,
+    * 데이터 저장 공간의 상태 정렬을 읽어 올건데, 그것들의 값들을 리스트로 만들고 모아서
+    * 정렬 상태 값의 요청 성공 상태에 넣을 거야
+    * 만약 예외가 발생하면 상태 정렬 값은 에러 메시지를 반환해
     * */
     fun readSortState() {
         _sortState.value = RequestState.Loading
@@ -129,6 +134,12 @@ class SharedViewModel @Inject constructor(
             _sortState.value = RequestState.Error(e)
         }
     }
+
+    /*persistSortState - 우선순위
+    * 정렬 상태 유지 기능
+    * 코투린과 뷰모델을 같이 컨트롤 할 수 있게 실행하고, 상태 관리하는(launch - IO 작업)를 실행시킨다.
+    * IO는 이미지 다운로드, 파일 입출력, 네트워킹 , DB작업을 할 때 사용합니다.
+    * 데이터 저장 공간에 있는 상태 저장 유지하도록 잠깐 정지하는 함수를 실행했다*/
     fun persisSortState(priority: Priority) {
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.persistSortState(priority = priority)

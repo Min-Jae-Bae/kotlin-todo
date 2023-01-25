@@ -48,6 +48,8 @@ fun ListContent(
                     )
                 }
             }
+            /*정렬 상태 데이터가 없을 때 그리고 모든 작업 상태가 성공 요청 타입일 때
+            * List 내용을 바꾼다 (모든 작업 값, 작업 스크린 이동 지원)*/
             sortState.data == Priority.NONE -> {
                 if (allTasks is RequestState.Success) {
                     HandleListContent(
@@ -56,13 +58,16 @@ fun ListContent(
                     )
                 }
             }
+            /*정렬 상태 데이터가 LOW일 때
+            * List 내용을 바꾼다 (낮은 우선순위 작업, 작업 스크린 이동 지원)*/
             sortState.data == Priority.LOW -> {
                 HandleListContent(
                     tasks = lowPriorityTasks,
                     navigateToTaskScreen = navigateToTaskScreen
                 )
             }
-
+            /*정렬 상태 데이터가 HIGH일 때
+            * List 내용을 바꾼다 (높은 우선순위 작업, 작업 스크린 이동 지원)*/
             sortState.data == Priority.HIGH -> {
                 HandleListContent(
                     tasks = highPriorityTasks,
