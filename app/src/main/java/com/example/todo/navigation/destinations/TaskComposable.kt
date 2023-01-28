@@ -33,7 +33,9 @@ fun NavGraphBuilder.taskComposable(
     ) { navBackStackEntry ->
         /*현재 경로에 백 스택에 있는 작업 아이디를 검색하고 가져옴*/
         val taskId = navBackStackEntry.arguments!!.getInt(TASK_ARGUMENT_KEY)
-        sharedViewModel.getSelectedTask(taskId = taskId)
+        LaunchedEffect(key1 = taskId) {
+            sharedViewModel.getSelectedTask(taskId = taskId)
+        }
         val selectedTask by sharedViewModel.selectedTask.collectAsState()
 
         /*LaunchedEffect
