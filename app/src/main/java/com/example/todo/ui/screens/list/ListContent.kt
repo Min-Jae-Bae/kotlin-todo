@@ -1,27 +1,39 @@
 package com.example.todo.ui.screens.list
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.todo.R
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 import com.example.todo.ui.theme.*
+import com.example.todo.util.Action
 import com.example.todo.util.RequestState
 import com.example.todo.util.SearchAppBarState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-/*ListContent - (모든 작업 상태 목록, 검색 작업 상태 목록, 검색 바 상태, 작업 스크린 이동)
+/*ListContent - (모든 작업 상태 목록, 검색 작업 상태 목록, 검색 바 상태, 옆으로 해서 작업을 삭제, 작업 스크린 이동)
 * 검색바 상태가 TRIGGERED(바뀌고)
 * 만약 검색 작업들이 요청 상태 Success와 자료형이 일치한다면 List 내용(검색 작업 데이터 조작) UI를 보여주고
 * 만약 검색 작업들이 요청 상태 Success와 자료형이 불일치하고 모든 작업이 요청상태 Success와 일치하다면
@@ -36,6 +48,7 @@ fun ListContent(
     highPriorityTasks: List<ToDoTask>,
     sortState: RequestState<Priority>,
     searchAppBarState: SearchAppBarState,
+    onSwipeToDelete: (Action, ToDoTask) -> Unit,
     navigateToTaskScreen: (taskId: Int) -> Unit,
 ) {
     if (sortState is RequestState.Success) {
@@ -44,6 +57,7 @@ fun ListContent(
                 if (searchedTasks is RequestState.Success) {
                     HandleListContent(
                         tasks = searchedTasks.data,
+                        onSwipeToDelete = onSwipeToDelete,
                         navigateToTaskScreen = navigateToTaskScreen
                     )
                 }
@@ -54,6 +68,7 @@ fun ListContent(
                 if (allTasks is RequestState.Success) {
                     HandleListContent(
                         tasks = allTasks.data,
+                        onSwipeToDelete = onSwipeToDelete,
                         navigateToTaskScreen = navigateToTaskScreen
                     )
                 }
@@ -63,6 +78,7 @@ fun ListContent(
             sortState.data == Priority.LOW -> {
                 HandleListContent(
                     tasks = lowPriorityTasks,
+                    onSwipeToDelete = onSwipeToDelete,
                     navigateToTaskScreen = navigateToTaskScreen
                 )
             }
@@ -71,6 +87,7 @@ fun ListContent(
             sortState.data == Priority.HIGH -> {
                 HandleListContent(
                     tasks = highPriorityTasks,
+                    onSwipeToDelete = onSwipeToDelete,
                     navigateToTaskScreen = navigateToTaskScreen
                 )
             }
@@ -79,13 +96,14 @@ fun ListContent(
 }
 
 
-/*HandleListContent - (작업, 작업 스크린 이동)
+/*HandleListContent - (작업, 옆으로 해서 작업을 삭제,작업 스크린 이동)
 * List 내용 조작 UI
 * 만약 tasks가 없을 때는 비어 있는 UI를 보여주고
 * tasks가 존재할 때는 모든 작업과 작업 스크린 이동 가능한 작업 목록 UI를 보여준다.*/
 @Composable
 fun HandleListContent(
     tasks: List<ToDoTask>,
+    onSwipeToDelete: (Action, ToDoTask) -> Unit,
     navigateToTaskScreen: (taskId: Int) -> Unit,
 ) {
     if (tasks.isEmpty()) {
@@ -93,16 +111,19 @@ fun HandleListContent(
     } else {
         DisplayTasks(
             tasks = tasks,
+            onSwipeToDelete = onSwipeToDelete,
             navigateToTaskScreen = navigateToTaskScreen
         )
     }
 }
 
 /*DisplayTasks
-* 모든 작업 목록, 작업 번호 순서*/
+* 모든 작업 목록, 옆으로 해서 작업을 삭제, 작업 번호 순서*/
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DisplayTasks(
     tasks: List<ToDoTask>,
+    onSwipeToDelete: (Action, ToDoTask) -> Unit,
     navigateToTaskScreen: (taskId: Int) -> Unit,
 ) {
     /*LazyColumn - 세로로 아이템 표시하는 RecyclerView
@@ -118,11 +139,90 @@ fun DisplayTasks(
                 task.id
             }
         ) { task ->
-            TaskItem(
-                toDoTask = task,
-                navigateToTaskScreen = navigateToTaskScreen
+            /*
+            * rememberDismissState - 취소한 상태를 기억
+            * */
+            val dismissState = rememberDismissState()
+            val dismissDirection = dismissState.dismissDirection
+            val isDismissed = dismissState.isDismissed(DismissDirection.EndToStart)
+            if (isDismissed && dismissDirection == DismissDirection.EndToStart) {
+                val scope = rememberCoroutineScope()
+                SideEffect {
+                    scope.launch {
+                        delay(300)
+                        onSwipeToDelete(Action.DELETE, task)
+                    }
+                }
+            }
+
+            val degrees by animateFloatAsState(
+                if (dismissState.targetValue == DismissValue.Default) 0f else -45f
             )
+
+            /* LaunchedEffect - 키로 재구성되면 기존 코루틴을 취소하고 새 코루틴에서 새 정지 함수로 싱행
+            * 아이템 상태를 나타내는 기억 나타나있지 않은 상태로 초기화
+            * 컴포지션이 true로 리컴포지션이 되면 아이템 상태를 true로 리컴포지션*/
+            var itemAppeared by remember { mutableStateOf(false) }
+            LaunchedEffect(key1 = true) {
+                itemAppeared = true
+            }
+
+            AnimatedVisibility(
+                visible = itemAppeared && !isDismissed,
+                enter = expandVertically(
+                    animationSpec = tween(
+                        durationMillis = 300
+                    )
+                ),
+                exit = shrinkVertically(
+                    animationSpec = tween(
+                        durationMillis = 300
+                    )
+                )
+            ) {
+                /*SwipeToDismiss - 옆으로 미는 기능
+                * state - 밀은 상태
+                * directions - 끝에서 앞 부분 방향
+                * dismissThresholds - 어느 한 지점에서 임계값을 지정
+                * background - 배경의 색, 아이콘 배정
+                * dismissContent - 밀은 곳의 내용 (할일, 작업 스크린)*/
+                SwipeToDismiss(
+                    state = dismissState,
+                    directions = setOf(DismissDirection.EndToStart),
+                    dismissThresholds = { FractionalThreshold(fraction = 0.7f) },
+                    background = { RedBackground(degrees = degrees) },
+                    dismissContent = {
+                        TaskItem(
+                            toDoTask = task,
+                            navigateToTaskScreen = navigateToTaskScreen
+                        )
+                    }
+                )
+            }
         }
+    }
+}
+
+/*RedBackground - 위치
+* 빨간색 삭제 배경
+* 박스를 만들건데 박스는 최대 사이즈, 배경 색상, 수직 높이를 지정한 속성을 가졌어
+* 그 박스 안에는 아이콘이 있는데 아이콘은 위도에 따른 아이콘이 돌아가
+* 아이콘 이미지는 삭제 아이콘으로 채웠고, 아이콘 문자열 내용 설명은 삭제 아이콘이라는 이름을 지정했어
+* 마지막으로 아이콘 색깔은 흰색으로 할게 !*/
+@Composable
+fun RedBackground(degrees: Float) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(HighPriorityColor)
+            .padding(horizontal = LARGEST_PADDING)
+    ) {
+        Icon(
+            modifier = Modifier.rotate(degrees = degrees),
+            imageVector = Icons.Filled.Delete,
+            contentDescription = stringResource(id = R.string.delete_icon),
+            tint = Color.White
+        )
     }
 }
 

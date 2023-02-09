@@ -110,6 +110,12 @@ fun ListScreen(
                 highPriorityTasks = highPriorityTasks,
                 sortState = sortState,
                 searchAppBarState = searchAppBarState,
+                /*옆으로 삭제 기능
+                * 액션에 따른 값이 오고, 그 작업 필드에 있는 작업을 선택해서 수행한다.*/
+                onSwipeToDelete = { action, task ->
+                    sharedViewModel.action.value = action
+                    sharedViewModel.updateTaskFields(selectedTask = task)
+                },
                 navigateToTaskScreen = navigateToTaskScreen
             )
         },
