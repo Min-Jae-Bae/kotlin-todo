@@ -141,7 +141,13 @@ fun DisplayTasks(
         ) { task ->
             /*
             * rememberDismissState - 취소한 상태를 기억
-            * */
+            * dismissDirection - 밀은 상태의 방향
+            * isDismissed - 밀어진(밀은 상태의 끝에서 시작점으로 밀음)
+            * 만약 밀어진 상태와 밀어진 방향이 끝에서 시작점이라면
+            *
+            * rememberCoroutineScope - 사용자 이벤트가 발생할 때 애니메이션 취소 하기 위해 사용
+            * SideEffect - Compose 상태를 Compose에서 관리하지 않는 객체와 공유하기 위해 리컴포지션 성공 시마다 호출
+            * lauch - 실행 (300초, 옆으로 삭제시, 작업)*/
             val dismissState = rememberDismissState()
             val dismissDirection = dismissState.dismissDirection
             val isDismissed = dismissState.isDismissed(DismissDirection.EndToStart)
@@ -155,6 +161,8 @@ fun DisplayTasks(
                 }
             }
 
+            /*animateFloatAsState - 단일 값을 에니메이션 처리하는 간단한 API
+            * 만약 미는 상태 타겟 값이 기본값이라면 - 0f, 그 외에는 -45f */
             val degrees by animateFloatAsState(
                 if (dismissState.targetValue == DismissValue.Default) 0f else -45f
             )
@@ -167,6 +175,10 @@ fun DisplayTasks(
                 itemAppeared = true
             }
 
+            /*AnimatedVisibility - 나타남과 사라짐을 애니메이션으로 처리
+            * visible - true일 때 enter 애니메이션, false일 때 exit 애니메이션
+            * enter - expandVertically -> 수직 하단으로 나타남
+            * exit - shrinkVertically -> 위 상단으로 사라지는*/
             AnimatedVisibility(
                 visible = itemAppeared && !isDismissed,
                 enter = expandVertically(

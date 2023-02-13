@@ -1,21 +1,22 @@
 package com.example.todo.navigation.destinations
 
-import android.util.Log
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.todo.ui.screens.list.ListScreen
 import com.example.todo.ui.viewmodels.SharedViewModel
 import com.example.todo.util.Constants.LIST_ARGUMENT_KEY
 import com.example.todo.util.Constants.LIST_SCREEN
 import com.example.todo.util.toAction
+import com.google.accompanist.navigation.animation.composable
 
 /*NavGraphBuilder
 * listComposable 관련 Composable 분할
 * listComposable - Task Screen 인자를 받음
 * shareViewModel - UI 관련 데이터를 받음*/
+@ExperimentalAnimationApi
 fun NavGraphBuilder.listComposable(
     navigateToTaskScreen: (taskId: Int) -> Unit,
     sharedViewModel: SharedViewModel

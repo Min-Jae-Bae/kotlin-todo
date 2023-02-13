@@ -1,11 +1,14 @@
 package com.example.todo.navigation.destinations
 
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable
+import com.google.accompanist.navigation.animation.composable
 import androidx.navigation.navArgument
 import com.example.todo.ui.screens.task.TaskScreen
 import com.example.todo.ui.viewmodels.SharedViewModel
@@ -16,6 +19,7 @@ import com.example.todo.util.Constants.TASK_SCREEN
 /*NavGraphBuilder
 * taskComposable 관련 Composable 분할
 * navigateToListScreen - List Screen 인자를 받음*/
+@ExperimentalAnimationApi
 fun NavGraphBuilder.taskComposable(
     sharedViewModel: SharedViewModel,
     navigateToListScreen: (Action) -> Unit,
@@ -29,7 +33,13 @@ fun NavGraphBuilder.taskComposable(
         route = TASK_SCREEN,
         arguments = listOf(navArgument(TASK_ARGUMENT_KEY) {
             type = NavType.IntType
-        })
+        }),
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { fullWidth -> -fullWidth },
+                animationSpec = tween(durationMillis = 300)
+            )
+        }
     ) { navBackStackEntry ->
         /*현재 경로에 백 스택에 있는 작업 아이디를 검색하고 가져옴*/
         val taskId = navBackStackEntry.arguments!!.getInt(TASK_ARGUMENT_KEY)
