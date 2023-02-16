@@ -45,10 +45,27 @@ interface ToDoDao {
     fun searchDatabase(searchQuery: String): Flow<List<ToDoTask>>
 
     // 중요성 낮은 순서로 정렬해서 보여줌
-    @Query("SELECT * FROM todo_table ORDER BY CASE WHEN priority LIKE 'L%' THEN 1 WHEN priority LIKE 'M%' THEN 2 WHEN priority LIKE 'H%' THEN 3 END")
+    @Query(
+        """
+        SELECT * FROM todo_table ORDER BY 
+    CASE 
+        WHEN priority LIKE 'L%' THEN 1
+        WHEN priority LIKE 'M%' THEN 2 
+        WHEN priority LIKE 'H%' THEN 3 
+    END
+    """
+    )
     fun sortByLowPriority(): Flow<List<ToDoTask>>
 
     // 중요성 높은 순서로 정렬해서 보여줌
-    @Query("SELECT * FROM todo_table ORDER BY CASE WHEN priority LIKE 'H%' THEN 1 WHEN priority LIKE 'M%' THEN 2 WHEN priority LIKE 'L%' THEN 3 END")
+    @Query(
+        """SELECT * FROM todo_table ORDER BY 
+    CASE
+        WHEN priority LIKE 'H%' THEN 1
+        WHEN priority LIKE 'M%' THEN 2
+        WHEN priority LIKE 'L%' THEN 3
+   END
+   """
+    )
     fun sortByHighPriority(): Flow<List<ToDoTask>>
 }

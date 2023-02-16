@@ -1,6 +1,7 @@
 package com.example.todo.ui.screens.list
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -45,19 +46,15 @@ fun ListFab(
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
+    action: Action,
     navigateToTaskScreen: (taskId: Int) -> Unit,
     sharedViewModel: SharedViewModel,
 ) {
     /*LaunchedEffect
     * 특정 키 값을 바탕으로 리컴포지션 해주는 기능 ( 즉 새로고침 같은 기능이라 할 수 있음 )*/
-    LaunchedEffect(key1 = true) {
-        sharedViewModel.getAllTasks()
-        sharedViewModel.readSortState()
+    LaunchedEffect(key1 = action) {
+        sharedViewModel.handleDatabaseAction(action = action)
     }
-    /*shareViewModel action을 불러오기
-    * by를 쓰는 이유 ? - 상속하지 않고 기존 기능을 그대로 사용하면서 새로운 기능을 추가할 때
-    * */
-    val action by sharedViewModel.action
 
     /*collectAsState
     * UI 데이터 모든 작업 Flow 수집
@@ -70,12 +67,8 @@ fun ListScreen(
     val lowPriorityTasks by sharedViewModel.lowPriorityTasks.collectAsState()
     val highPriorityTasks by sharedViewModel.highPriorityTasks.collectAsState()
 
-    val searchAppBarState: SearchAppBarState by sharedViewModel.searchAppBarState
-    val searchTextState: String by sharedViewModel.searchTextState
-
-    /*handleDatabaseAction
-    * Action에 해당하는 역할을 수행한다..*/
-    sharedViewModel.handleDatabaseAction(action = action)
+    val searchAppBarState: SearchAppBarState = sharedViewModel.searchAppBarState
+    val searchTextState: String = sharedViewModel.searchTextState
 
     /*Snackbar
     * Compose에서 Snackbar의 동작대로 이용하기 위해서는 Scaffold State로 감싸야한다.
@@ -84,11 +77,9 @@ fun ListScreen(
 
     DisplaySnackBar(
         scaffoldState = scaffoldState,
-        handleDatabaseActions = { sharedViewModel.handleDatabaseAction(action = action) },
-        onUndoClicked = {
-            sharedViewModel.action.value = it
-        },
-        taskTitle = sharedViewModel.title.value,
+        onComplete = { sharedViewModel.updateAction(newAction = it) },
+        onUndoClicked = { sharedViewModel.updateAction(newAction = it)},
+        taskTitle = sharedViewModel.title,
         action = action
     )
 
@@ -113,8 +104,9 @@ fun ListScreen(
                 /*옆으로 삭제 기능
                 * 액션에 따른 값이 오고, 그 작업 필드에 있는 작업을 선택해서 수행한다.*/
                 onSwipeToDelete = { action, task ->
-                    sharedViewModel.action.value = action
+                    sharedViewModel.updateAction(newAction = action)
                     sharedViewModel.updateTaskFields(selectedTask = task)
+                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
                 },
                 navigateToTaskScreen = navigateToTaskScreen
             )
@@ -131,12 +123,11 @@ fun ListScreen(
 @Composable
 fun DisplaySnackBar(
     scaffoldState: ScaffoldState,
-    handleDatabaseActions: () -> Unit,
+    onComplete: (Action) -> Unit,
     onUndoClicked: (Action) -> Unit,
     taskTitle: String,
     action: Action,
 ) {
-    handleDatabaseActions()
 
     /*rememberCoroutineScope
     * Composable 파괴될 때 파괴되는 코루틴을 생성 해야될 때 사용*/
@@ -158,7 +149,7 @@ fun DisplaySnackBar(
             scope.launch {
                 val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
                     message = setMessage(action = action, taskTitle = taskTitle),
-                    actionLabel = "Ok"
+                    actionLabel = setActionLabel(action = action)
                 )
                 undoDeletedTask(
                     action = action,
@@ -166,6 +157,7 @@ fun DisplaySnackBar(
                     onUndoClicked = onUndoClicked
                 )
             }
+            onComplete(Action.NO_ACTION)
         }
     }
 }
@@ -175,7 +167,7 @@ fun DisplaySnackBar(
 * 그 이외 클릭시 행동 이름과 작업 목록을 반환*/
 private fun setMessage(action: Action, taskTitle: String): String {
     return when (action) {
-        Action.DELETE_ALL -> "All Tasks Removed"
+        Action.DELETE_ALL -> "모든 작업이 삭제되었습니다."
         else -> "${action.name}: $taskTitle"
     }
 }
@@ -185,9 +177,9 @@ private fun setMessage(action: Action, taskTitle: String): String {
 * 그 이외는 "OK" 반환*/
 private fun setActionLabel(action: Action): String {
     return if (action.name == "DELETE") {
-        "UNDO"
+        "취소"
     } else {
-        "OK"
+        "확인"
     }
 }
 

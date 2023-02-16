@@ -26,7 +26,6 @@ import com.example.todo.ui.theme.*
 import com.example.todo.ui.viewmodels.SharedViewModel
 import com.example.todo.util.Action
 import com.example.todo.util.SearchAppBarState
-import com.example.todo.util.TrailingIconState
 
 /*ListAppBar (UI 데이터, 검색 바 상태, 검색 문자)
 * 상단 작업 목록 바
@@ -49,15 +48,16 @@ fun ListAppBar(
         SearchAppBarState.CLOSED -> {
             DefaultListAppBar(
                 onSearchClicked = {
-                    sharedViewModel.searchAppBarState.value =
-                        SearchAppBarState.OPENED
+                    sharedViewModel.updateAppBarState(
+                        newState = SearchAppBarState.OPENED
+                    )
                 },
                 onSortClicked = {
                     sharedViewModel.persisSortState(it)
                 },
                 onDeleteAllConfirmed = {
                     // UI 관련 데이터 Action 값이 DELETE_ALL
-                    sharedViewModel.action.value = Action.DELETE_ALL
+                    sharedViewModel.updateAction(newAction = Action.DELETE_ALL)
                 }
             )
         }
@@ -65,12 +65,13 @@ fun ListAppBar(
             SearchAppBar(
                 text = searchTextState,
                 onTextChange = { newText ->
-                    sharedViewModel.searchTextState.value = newText
+                    sharedViewModel.updateSearchText(newText = newText)
                 },
                 onCloseClicked = {
-                    sharedViewModel.searchAppBarState.value =
-                        SearchAppBarState.CLOSED
-                    sharedViewModel.searchTextState.value = ""
+                    sharedViewModel.updateAppBarState(
+                        newState = SearchAppBarState.CLOSED
+                    )
+                    sharedViewModel.updateSearchText(newText = "")
                 },
                 onSearchClicked = {
                     // UI 관련 데이터 DB 검색 기능을 실행 한다
@@ -175,29 +176,15 @@ fun SortAction(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            DropdownMenuItem(
-                onClick = {
-                    expanded = false
-                    onSortClicked(Priority.HIGH)
+            Priority.values().slice(setOf(0, 2, 3)).forEach { priority ->
+                DropdownMenuItem(
+                    onClick = {
+                        expanded = false
+                        onSortClicked(priority)
+                    }
+                ) {
+                    PriorityItem(priority = priority)
                 }
-            ) {
-                PriorityItem(priority = Priority.HIGH)
-            }
-            DropdownMenuItem(
-                onClick = {
-                    expanded = false
-                    onSortClicked(Priority.LOW)
-                }
-            ) {
-                PriorityItem(priority = Priority.LOW)
-            }
-            DropdownMenuItem(
-                onClick = {
-                    expanded = false
-                    onSortClicked(Priority.NONE)
-                }
-            ) {
-                PriorityItem(priority = Priority.NONE)
             }
         }
     }
@@ -253,10 +240,7 @@ fun SearchAppBar(
     onCloseClicked: () -> Unit,
     onSearchClicked: (String) -> Unit,
 ) {
-    // 아이콘 초기 상태 기억 - 안에 내용 삭제 준비
-    var trailingIconState by remember {
-        mutableStateOf(TrailingIconState.READY_TO_DELETE)
-    }
+
     // AppBar 배경(Surface)를 만듬, elevation - 그림자 있는 배경 생성
     Surface(
         modifier = Modifier
@@ -308,21 +292,10 @@ fun SearchAppBar(
             trailingIcon = {
                 IconButton(
                     onClick = {
-                        /*삭제 준비일 때 - 텍스트 삭제 및 닫을 준비
-                        * 닫을 준비일 때 - 텍스트 존재시 다시 삭제, 텍스트 없을시 닫고 원래 삭제 준비 상태로*/
-                        when (trailingIconState) {
-                            TrailingIconState.READY_TO_DELETE -> {
-                                onTextChange("")
-                                trailingIconState = TrailingIconState.READY_TO_CLOSE
-                            }
-                            TrailingIconState.READY_TO_CLOSE -> {
-                                if (text.isNotEmpty()) {
-                                    onTextChange("")
-                                } else {
-                                    onCloseClicked()
-                                    trailingIconState = TrailingIconState.READY_TO_DELETE
-                                }
-                            }
+                        if (text.isNotEmpty()) {
+                            onTextChange("")
+                        } else {
+                            onCloseClicked()
                         }
                     }
                 ) {

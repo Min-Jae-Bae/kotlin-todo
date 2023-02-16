@@ -1,7 +1,8 @@
 package com.example.todo.ui.viewmodels
 
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todo.data.models.Priority
@@ -36,16 +37,30 @@ class SharedViewModel @Inject constructor(
 ) : ViewModel() {
 
     //action 상태 NO_ACTION 초기화
-    val action: MutableState<Action> = mutableStateOf(Action.NO_ACTION)
+    var action by mutableStateOf(Action.NO_ACTION)
+        private set
 
-    val id: MutableState<Int> = mutableStateOf(0)
-    val title: MutableState<String> = mutableStateOf("")
-    val description: MutableState<String> = mutableStateOf("")
-    val priority: MutableState<Priority> = mutableStateOf(Priority.LOW)
+    var id by mutableStateOf(0)
+        private set
+    var title by mutableStateOf("")
+        private set
+    var description by mutableStateOf("")
+        private set
+    var priority by mutableStateOf(Priority.LOW)
+        private set
 
-    val searchAppBarState: MutableState<SearchAppBarState> =
-        mutableStateOf(SearchAppBarState.CLOSED)
-    val searchTextState: MutableState<String> = mutableStateOf("")
+    var searchAppBarState by mutableStateOf(SearchAppBarState.CLOSED)
+        private set
+    var searchTextState by mutableStateOf("")
+        private set
+
+    /* 언더바(_) 쓰임
+    * 외부에서 상태를 변경하지 못하게 하고, 내부(ShareViewModel)에서는 변경이 가능하게 하기 위한 목적*/
+    // _allTasks = 할일 작업 목록의 요청 상태 변경 가능 상태 흐름을 쉬고 있는 상태로 초기화
+    // allTasks = 할일 작업 목록 요청 상태 흐름을 외부에서 변경할 수 없게 만듬
+    private val _allTasks =
+        MutableStateFlow<RequestState<List<ToDoTask>>>(RequestState.Idle)
+    val allTasks: StateFlow<RequestState<List<ToDoTask>>> = _allTasks
 
     /*_searchedTasks 와 searchedTasks
     * _searchedTasks는 변경 가능한 상태 흐름 요청 상태의 작업 목록을 Idle(쉬고 있는 상태)로 초기화한다.
@@ -54,6 +69,18 @@ class SharedViewModel @Inject constructor(
     private val _searchedTasks =
         MutableStateFlow<RequestState<List<ToDoTask>>>(RequestState.Idle)
     val searchedTasks: StateFlow<RequestState<List<ToDoTask>>> = _searchedTasks
+
+    /*_sortState - 정렬 상태
+    * 내부에서 상태를 변경할 수 있는 private 변수 우선순위 요청 상태를 쉬고 있는 중으로 초기화 한다
+    * 그리고 변경된 우선순위의 요청 상태 흐름을 내부에서 사용할 수 있게 불변의 변수를 만든다.*/
+    private val _sortState =
+        MutableStateFlow<RequestState<Priority>>(RequestState.Idle)
+    val sortState: StateFlow<RequestState<Priority>> = _sortState
+
+    init {
+        getAllTasks()
+        readSortState()
+    }
 
     /*searchDatabase - (검색할 내용)
     * DB 검색 기능
@@ -76,7 +103,7 @@ class SharedViewModel @Inject constructor(
         } catch (e: Exception) {
             _searchedTasks.value = RequestState.Error(e)
         }
-        searchAppBarState.value = SearchAppBarState.TRIGGERED
+        searchAppBarState = SearchAppBarState.TRIGGERED
     }
 
     /*lowPriorityTasks - 해야할 작업 목록들의 상태 흐름 변수 지정
@@ -105,13 +132,6 @@ class SharedViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    /*_sortState - 정렬 상태
-    * 내부에서 상태를 변경할 수 있는 private 변수 우선순위 요청 상태를 쉬고 있는 중으로 초기화 한다
-    * 그리고 변경된 우선순위의 요청 상태 흐름을 내부에서 사용할 수 있게 불변의 변수를 만든다.*/
-    private val _sortState =
-        MutableStateFlow<RequestState<Priority>>(RequestState.Idle)
-    val sortState: StateFlow<RequestState<Priority>> = _sortState
-
     /*readSortState
     * 정렬 상태를 가져오는 기능
     * 정렬 상태 값을 로딩 상태로 변경한다.
@@ -120,7 +140,7 @@ class SharedViewModel @Inject constructor(
     * 정렬 상태 값의 요청 성공 상태에 넣을 거야
     * 만약 예외가 발생하면 상태 정렬 값은 에러 메시지를 반환해
     * */
-    fun readSortState() {
+    private fun readSortState() {
         _sortState.value = RequestState.Loading
         try {
             viewModelScope.launch {
@@ -146,20 +166,12 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    /* 언더바(_) 쓰임
-    * 외부에서 상태를 변경하지 못하게 하고, 내부(ShareViewModel)에서는 변경이 가능하게 하기 위한 목적*/
-    // _allTasks = 할일 작업 목록의 요청 상태 변경 가능 상태 흐름을 쉬고 있는 상태로 초기화
-    // allTasks = 할일 작업 목록 요청 상태 흐름을 외부에서 변경할 수 없게 만듬
-    private val _allTasks =
-        MutableStateFlow<RequestState<List<ToDoTask>>>(RequestState.Idle)
-    val allTasks: StateFlow<RequestState<List<ToDoTask>>> = _allTasks
-
     /*getAllTasks - 모든 작업을 가져오는 기능
     * 모든 작업의 상태 값을 - Loading으로 변경
     * coroutine 관 viewModel를 같이 control 할 수 있게 실행하고, ToDoRepository에서 모든 작업을 모으고,
     * 모은 작업의 값을 모두 요청 성공 상태로 변경한 값을 넣는다.
     * 하는데 예외가 발생한다면 모든 작업에 대한 값을 에러 상태로 변경한다.*/
-    fun getAllTasks() {
+    private fun getAllTasks() {
         _allTasks.value = RequestState.Loading
         try {
             viewModelScope.launch {
@@ -203,14 +215,14 @@ class SharedViewModel @Inject constructor(
     private fun addTask() {
         viewModelScope.launch(Dispatchers.IO) {
             val toDoTask = ToDoTask(
-                title = title.value,
-                description = description.value,
-                priority = priority.value
+                title = title,
+                description = description,
+                priority = priority
             )
             repository.addTask(toDoTask = toDoTask)
         }
         // 작업을 추가하면 검색 바를 종료 상태로 만들어라
-        searchAppBarState.value = SearchAppBarState.CLOSED
+        searchAppBarState = SearchAppBarState.CLOSED
     }
 
     /*updateTask
@@ -219,10 +231,10 @@ class SharedViewModel @Inject constructor(
     private fun updateTask() {
         viewModelScope.launch(Dispatchers.IO) {
             val toDoTask = ToDoTask(
-                id = id.value,
-                title = title.value,
-                description = description.value,
-                priority = priority.value
+                id = id,
+                title = title,
+                description = description,
+                priority = priority
             )
             repository.updateTask(toDoTask = toDoTask)
         }
@@ -234,10 +246,10 @@ class SharedViewModel @Inject constructor(
     private fun deleteTask() {
         viewModelScope.launch(Dispatchers.IO) {
             val toDoTask = ToDoTask(
-                id = id.value,
-                title = title.value,
-                description = description.value,
-                priority = priority.value
+                id = id,
+                title = title,
+                description = description,
+                priority = priority
             )
             repository.deleteTask(toDoTask = toDoTask)
         }
@@ -280,7 +292,6 @@ class SharedViewModel @Inject constructor(
 
             }
         }
-        this.action.value = Action.NO_ACTION
     }
 
     /*updateTaskFields - 할일을 선택(선택안할 수 도 있음)
@@ -288,15 +299,15 @@ class SharedViewModel @Inject constructor(
     * 선택되지 않았을 때 기본 값으로 설정*/
     fun updateTaskFields(selectedTask: ToDoTask?) {
         if (selectedTask != null) {
-            id.value = selectedTask.id
-            title.value = selectedTask.title
-            description.value = selectedTask.description
-            priority.value = selectedTask.priority
+            id = selectedTask.id
+            title = selectedTask.title
+            description = selectedTask.description
+            priority = selectedTask.priority
         } else {
-            id.value = 0
-            title.value = ""
-            description.value = ""
-            priority.value = Priority.LOW
+            id = 0
+            title = ""
+            description = ""
+            priority = Priority.LOW
         }
     }
 
@@ -304,14 +315,33 @@ class SharedViewModel @Inject constructor(
     * 길이가 20까지만 입력 가능*/
     fun updateTitle(newTitle: String) {
         if (newTitle.length < MAX_TITLE_LENGTH) {
-            title.value = newTitle
+            title = newTitle
         }
+    }
+
+    fun updateSearchText(newText: String) {
+        searchTextState = newText
+    }
+    fun updateAppBarState(newState: SearchAppBarState) {
+        searchAppBarState = newState
+    }
+
+    fun updateDescription(newDescription: String) {
+        description = newDescription
+    }
+
+    fun updatePriority(newPriority: Priority) {
+        priority = newPriority
+    }
+
+    fun updateAction(newAction: Action) {
+        action = newAction
     }
 
     /*validateFields
     * 제목과 설명이 둘 중에 하나만 비어 있어도 false 반환*/
     fun validateFields(): Boolean {
-        return title.value.isNotEmpty() && description.value.isNotEmpty()
+        return title.isNotEmpty() && description.isNotEmpty()
 
     }
 }
