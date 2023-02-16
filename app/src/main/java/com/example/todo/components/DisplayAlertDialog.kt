@@ -11,15 +11,6 @@ import com.example.todo.ui.theme.Black
 import com.example.todo.ui.theme.Purple200
 import com.example.todo.ui.theme.White
 
-/*DisplayAlertDialog - (제목, 메시지, 공개, 닫힘, Yes 클릭시)
-* Dialog가 열려 있을 때 보여준다.
-*
-* AlertDialog
-* title - Alert 제목 부분
-* text - Alert 내용(body) 부분
-* confirmButton - 확인 버튼 (확인 버튼 클릭 후 Dialog 종료)
-* dismissButton - 취소 버튼 (Dialog 종료)
-* onDismissRequest - Alert 외부를 터치 했을 때 (Dialog 종료)*/
 @Composable
 fun DisplayAlertDialog(
     title: String,

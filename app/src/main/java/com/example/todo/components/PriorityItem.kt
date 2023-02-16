@@ -15,12 +15,6 @@ import com.example.todo.ui.theme.LARGE_PADDING
 import com.example.todo.ui.theme.PRIORITY_INDICATOR_SIZE
 import com.example.todo.ui.theme.Typography
 
-/*PriorityItem
-* Row - 수평 배치 Layout (요소 - 중앙 정렬)
-*
-* Canvas - 배경 생성,,, 그 속에 drawCircle - 원을 그림
-* Text - 우선순위 속성 이름을 배치하고 보여줌
-* */
 @Composable
 fun PriorityItem(priority: Priority) {
     Row(

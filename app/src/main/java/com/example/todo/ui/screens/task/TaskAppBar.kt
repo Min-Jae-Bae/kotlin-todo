@@ -18,9 +18,6 @@ import com.example.todo.components.DisplayAlertDialog
 import com.example.todo.data.models.Priority
 import com.example.todo.data.models.ToDoTask
 
-/*TaskAppBae - selectedTask(작업 선택 - ? = null 존재, 선택하지 않을 수 있음을 의미), navigateToListScreen(목록 추가 행동)
-* 작업을 선택하지 않는다면 NewTaskAppBar를 보여주고
-* 작업을 선택한다면 확장된 ExistingTaskAppBar를 보여주세요 */
 @Composable
 fun TaskAppBar(
     selectedTask: ToDoTask?,
@@ -36,10 +33,6 @@ fun TaskAppBar(
     }
 }
 
-/*NewTaskAppBae
-* TopAppBar(상단 기능)
-* - navigationIcon - 앞 아이콘( 리스트 화면으로 이등 클릭)
-* - actions - 행동 기능(추가 버튼)*/
 @Composable
 fun NewTaskAppBar(
     navigateToListScreen: (Action) -> Unit,
@@ -61,10 +54,6 @@ fun NewTaskAppBar(
     )
 }
 
-/*BackAction
-* 뒤로 행동
-* IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
-* Icon - 아이콘 부여*/
 @Composable
 fun BackAction(
     onBackClicked: (Action) -> Unit,
@@ -78,8 +67,6 @@ fun BackAction(
     }
 }
 
-/*AddAction
-* 추가 행동*/
 @Composable
 fun AddAction(
     onAddClicked: (Action) -> Unit,
@@ -93,11 +80,6 @@ fun AddAction(
     }
 }
 
-/*ExistingTaskAppBar ( 작업 선택, 목록 스크린 이동 )
-* 확장 작업 바
-* TopAppBar(상단 기능)
-* - navigationIcon - 앞 아이콘(리스트 화면으로 이등 클릭)
-* - actions - 행동 기능(삭제, 업데이트 버튼)*/
 @Composable
 fun ExistingTaskAppBar(
     selectedTask: ToDoTask,
@@ -125,10 +107,6 @@ fun ExistingTaskAppBar(
     )
 }
 
-/*CloseAction
-* 종료 행동
-* IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
-* Icon - 아이콘 부여*/
 @Composable
 fun CloseAction(
     onCloseClicked: (Action) -> Unit,
@@ -142,14 +120,6 @@ fun CloseAction(
     }
 }
 
-/*ExistingTaskAppBarActions - (선택된 작업, List 화면 이동)
-* 기존 작업 바 행동들 보여주는 UI
-*
-* openDialog 상태를 닫혔있는 상태(false)로 초기화하고 기억한다
-* DisplayAlertDialog - openDialog(true), closeDialog(false), onYesClicked(삭제를 수행하고 List UI 이동)
-* DeleteAction - Delete 아이콘 클릭시 Dialog 오픈
-* UpdateAction - Update 아이콘 클릭시 List UI로 이동
-* */
 @Composable
 fun ExistingTaskAppBarActions(
     selectedTask: ToDoTask,
@@ -176,10 +146,6 @@ fun ExistingTaskAppBarActions(
     UpdateAction(onUpdateClicked = navigateToListScreen)
 }
 
-/*DeleteAction
-* 삭제 행동
-* IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
-* Icon - 아이콘 부여*/
 @Composable
 fun DeleteAction(
     onDeleteClicked: () -> Unit,
@@ -193,10 +159,6 @@ fun DeleteAction(
     }
 }
 
-/*UpdateAction
-* 업데이트 행동
-* IconButton - 버튼 틀 ( 백 버튼 클릭 행동 )
-* Icon - 아이콘 부여*/
 @Composable
 fun UpdateAction(
     onUpdateClicked: (Action) -> Unit,

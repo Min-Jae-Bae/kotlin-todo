@@ -19,9 +19,6 @@ import androidx.compose.ui.unit.dp
 import com.example.todo.R
 import com.example.todo.ui.theme.MediumGray
 
-/*EmptyContent
-* Column - 세로 배치, Arrangement - 레이아웃의 중심축 방향, Alignment - 레이아웃의 중심축 반대 방향
-* Icon, Text 세로로 배치 */
 @Composable
 fun EmptyContent() {
     Column(

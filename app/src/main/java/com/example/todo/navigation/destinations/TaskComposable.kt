@@ -16,19 +16,11 @@ import com.example.todo.util.Action
 import com.example.todo.util.Constants.TASK_ARGUMENT_KEY
 import com.example.todo.util.Constants.TASK_SCREEN
 
-/*NavGraphBuilder
-* taskComposable 관련 Composable 분할
-* navigateToListScreen - List Screen 인자를 받음*/
 @ExperimentalAnimationApi
 fun NavGraphBuilder.taskComposable(
     sharedViewModel: SharedViewModel,
     navigateToListScreen: (Action) -> Unit,
 ) {
-    /*composable - argument 통해 이동
-    * TASK_SCREEN 길에서 해당 taskId 받아 이동
-    *
-    * NavBackStackEntry
-    * - navBackStackEntry에서 arguments목록을 가져온 다음 필요한 인수를 검색하고 가져와서 컴포저블 화면으로 전달.*/
     composable(
         route = TASK_SCREEN,
         arguments = listOf(navArgument(TASK_ARGUMENT_KEY) {
@@ -41,15 +33,12 @@ fun NavGraphBuilder.taskComposable(
             )
         }
     ) { navBackStackEntry ->
-        /*현재 경로에 백 스택에 있는 작업 아이디를 검색하고 가져옴*/
         val taskId = navBackStackEntry.arguments!!.getInt(TASK_ARGUMENT_KEY)
         LaunchedEffect(key1 = taskId) {
             sharedViewModel.getSelectedTask(taskId = taskId)
         }
         val selectedTask by sharedViewModel.selectedTask.collectAsState()
 
-        /*LaunchedEffect
-        * 작업 아이디에 따른 작업 업데이트를 suspend fun에 따른 재수행*/
         LaunchedEffect(key1 = selectedTask) {
             if (selectedTask != null || taskId == -1) {
                 sharedViewModel.updateTaskFields(selectedTask = selectedTask)

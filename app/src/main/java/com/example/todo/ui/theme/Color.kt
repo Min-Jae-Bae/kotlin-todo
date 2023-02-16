@@ -29,12 +29,6 @@ val Colors.taskItemBackgroundColor: Color
     @Composable
     get() = if (isLight) Color.White else DarkGray
 
-val Colors.fabIBackgroundColor: Color
-    @Composable
-    get() = if (isLight) Teal200 else Purple700
-
-/*Composable Color
-* Dark, Light theme 따른 색깔을 불러옴*/
 val Colors.topAppBarContentColor: Color
     @Composable
     get() = if (isLight) Color.White else LightGray
