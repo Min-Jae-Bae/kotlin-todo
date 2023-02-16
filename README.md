@@ -9,6 +9,7 @@ This sample showcase:
 * Animation
 
 ## Screenshots
+![Screenshot](../screen-shot/todo_screen_shots.png)
 
 ## Features
 
